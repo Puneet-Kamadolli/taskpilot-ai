@@ -20,3 +20,12 @@ class TaskResponse(BaseModel):
 
     class Config:
          from_attributes = True
+
+class TaskUpdate(BaseModel):
+    
+    original_prompt: str
+    title: str
+    category: str
+    priority: str
+    severity: str
+    status: str
