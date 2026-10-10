@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 class TaskCreate(BaseModel):
@@ -7,6 +9,7 @@ class TaskCreate(BaseModel):
     category: str
     priority: str
     severity: str
+    due_date: Optional[datetime] = None
 
 class TaskResponse(BaseModel):
 
@@ -17,6 +20,7 @@ class TaskResponse(BaseModel):
     priority: str
     severity: str
     status: str
+    due_date: Optional[datetime] = None
 
     class Config:
          from_attributes = True
@@ -29,3 +33,4 @@ class TaskUpdate(BaseModel):
     priority: str
     severity: str
     status: str
+    due_date: Optional[datetime] = None

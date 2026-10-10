@@ -5,6 +5,8 @@ Problem Statement: Many professionals and students struggle to manage tasks effi
 
 Solution being Developed: Currently developing TaskPilot AI, an AI-powered task management application that enables users to create and manage tasks using natural language. The application aims to leverage Generative AI to automatically extract task details, categorize tasks, assign priorities, identify deadlines, and generate actionable summaries. The system will provide intelligent reminders and centralized task tracking to help users stay organized and improve productivity.
 
+Technology stack: Python, FastAPI, SQLAlchemy, SQLite, Gemini, and eventually React.
+
 Current Scope & Features
 - Natural language-based task creation.
 - AI-powered extraction of task title, deadline, and priority.
@@ -13,3 +15,8 @@ Current Scope & Features
 - Task filtering and search functionality.
 - Intelligent reminder scheduling using APScheduler.
 - SQLite-based task persistence and reporting.
+
+Developed Features
+- Task creation, updation and deletion
+- Filtering tasks by fields such as category, priority, severity and status
+- Optional task deadlines

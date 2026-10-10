@@ -25,7 +25,8 @@ def create_task(
         title = request.title,
         category = request.category,
         priority = request.priority,
-        severity = request.severity
+        severity = request.severity,
+        due_date = request.due_date
     )
 
     db.add(task)
@@ -90,6 +91,7 @@ def update_task(task_id: int,
     task.priority = request.priority
     task.severity = request.severity
     task.status = request.status
+    task.due_date = request.due_date
 
     db.commit()
     db.refresh(task)

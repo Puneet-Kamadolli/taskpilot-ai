@@ -14,6 +14,7 @@ class Task(Base):
     priority = Column(String, nullable=False)
     severity = Column(String, nullable=False)
     status = Column(String, default="Pending")
+    due_date = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True),server_default=func.now())
     updated_at = Column(DateTime(timezone=True),server_default=func.now(),onupdate=func.now())
     
