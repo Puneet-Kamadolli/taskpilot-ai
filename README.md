@@ -5,18 +5,48 @@ Problem Statement: Many professionals and students struggle to manage tasks effi
 
 Solution being Developed: Currently developing TaskPilot AI, an AI-powered task management application that enables users to create and manage tasks using natural language. The application aims to leverage Generative AI to automatically extract task details, categorize tasks, assign priorities, identify deadlines, and generate actionable summaries. The system will provide intelligent reminders and centralized task tracking to help users stay organized and improve productivity.
 
-Technology stack: Python, FastAPI, SQLAlchemy, SQLite, Gemini, and eventually React.
 
-Current Scope & Features
-- Natural language-based task creation.
-- AI-powered extraction of task title, deadline, and priority.
-- Automatic task categorization and summarization using Gemini AI.
-- REST APIs for task management and status tracking.
-- Task filtering and search functionality.
-- Intelligent reminder scheduling using APScheduler.
-- SQLite-based task persistence and reporting.
+### Technology Stack
 
-Developed Features
-- Task creation, updation and deletion
-- Filtering tasks by fields such as category, priority, severity and status
-- Optional task deadlines
+#### Implemented
+
+* Python
+
+* FastAPI – REST API development
+* SQLAlchemy – ORM and database operations
+
+
+* Uvicorn – ASGI server
+####  Planned
+
+* Google gemini AI - natural language task processing
+* APIScheduler - scheduled remainder
+* dateparser and python-dateutil - natural language date and time handling
+* React and typescript - frontend development
+* Tailwind CSS - UI styling
+* Axios - frontend API communication
+
+### Implemented features
+
+
+
+* Task CRUD APIs: Create, retrieve, update, and delete tasks.
+* Task Retrieval: Retrieve all tasks or retrieve a task by its ID.
+
+* Task Filtering: Filter tasks by category, priority, severity, and status.
+* Deadline Management: Store optional task due dates and times.
+* Request Validation: Validate task data using Pydantic models
+
+* Database Persistence: Store task records in SQLite using SQLAlchemy.
+
+* REST API Documentation: Explore and test endpoints through FastAPI's Swagger UI.
+
+### Planned Features
+
+* AI-Powered Task Creation: Convert natural-language prompts into structured tasks using Google Gemini
+* Task Summarization: Generate concise, actionable task titles and summaries.
+* Intelligent Classification: Suggest task categories, priorities, and severity levels.
+* Natural-Language Deadline Extraction: Interpret expressions such as "by this weekend" and convert them into deadlines.
+* Date-Based Filtering: Retrieve tasks due today, upcoming tasks, and overdue tasks.
+* Automated Reminders: Schedule explicit and priority-based reminders using APScheduler.
+* Frontend Dashboard: Build a user interface for task creation, filtering, status updates, and deadline tracking.
