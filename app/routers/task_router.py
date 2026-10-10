@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from sqlalchemy.orm import Session
 
@@ -34,8 +35,25 @@ def create_task(
     return task
 
 @router.get("", response_model=list[TaskResponse])
-def get_all_tasks(db: Session = Depends(get_db)):
-    tasks = db.query(Task).order_by(Task.id.desc()).all()
+def get_all_tasks(
+    category: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None),
+    severity: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    db: Session = Depends(get_db)):
+
+    query = db.query(Task)
+
+    if category:
+        query = query.filter(Task.category == category)
+    if priority:
+        query = query.filter(Task.priority == priority)
+    if severity: 
+        query = query.filter(Task.severity == severity)
+    if status: 
+        query = query.filter(Task.status == status)
+    
+    tasks = query.order_by(Task.id.desc()).all()
     return tasks
 
 @router.get("/{task_id}", response_model=TaskResponse)
