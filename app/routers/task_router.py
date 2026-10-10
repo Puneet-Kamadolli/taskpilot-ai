@@ -1,3 +1,4 @@
+from datetime import date, datetime, time, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -41,9 +42,14 @@ def get_all_tasks(
     priority: Optional[str] = Query(None),
     severity: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    due_today: bool = False,
+    overdue: bool = False,
+    due_before: Optional[date] = Query(None),
     db: Session = Depends(get_db)):
 
     query = db.query(Task)
+
+    # Filter based on fields
 
     if category:
         query = query.filter(Task.category == category)
@@ -53,7 +59,36 @@ def get_all_tasks(
         query = query.filter(Task.severity == severity)
     if status: 
         query = query.filter(Task.status == status)
-    
+
+    # due date filters
+
+    # Tasks with due today
+    if due_today:
+
+        today = date.today()
+        start_of_day = datetime.combine(today, time.min)
+        start_of_tomorrow = start_of_day + timedelta(days=1)
+
+        query = query.filter(
+            Task.due_date >= start_of_day,
+            Task.due_date < start_of_tomorrow
+        )
+
+    # Overdue Tasks
+    if overdue:
+        current_time = datetime.now()
+
+        query = query.filter(
+            Task.due_date > current_time
+        )
+
+    # Tasks due before the specified date
+    if due_before:
+
+        cut_off = datetime.combine(due_before, time.min)
+
+        query = query.filter(Task.due_date < cut_off)
+
     tasks = query.order_by(Task.id.desc()).all()
     return tasks
 
