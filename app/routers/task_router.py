@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.models.task import Task
 from app.schemas.task_schema import TaskCreate, TaskResponse, TaskUpdate
+from app.utils.date_utils import extract_due_date
 
 router = APIRouter(
     prefix="/tasks",
@@ -21,13 +22,22 @@ def create_task(
     request: TaskCreate,
     db: Session = Depends(get_db)
 ):
+
+    # Use the explicitly supplied deadline when available
+    # Otherwise, try to extract it from the original prompt
+
+    due_date = request.due_date
+
+    if due_date is None:
+        due_date = extract_due_date(request.original_prompt)
+
     task = Task(
         original_prompt = request.original_prompt,
         title = request.title,
         category = request.category,
         priority = request.priority,
         severity = request.severity,
-        due_date = request.due_date
+        due_date = due_date
     )
 
     db.add(task)
