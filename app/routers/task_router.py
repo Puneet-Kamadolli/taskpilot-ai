@@ -1,3 +1,5 @@
+import logging
+
 from datetime import date, datetime, time, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -6,8 +8,11 @@ from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.models.task import Task
-from app.schemas.task_schema import TaskCreate, TaskResponse, TaskUpdate
+from app.schemas.task_schema import TaskCreate, TaskResponse, TaskUpdate, TaskPromptCreate
 from app.utils.date_utils import extract_due_date
+from app.services.gemini_service import extract_task_details
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/tasks",
@@ -45,6 +50,51 @@ def create_task(
     db.refresh(task)
 
     return task
+
+@router.post("/from-prompt", response_model=TaskResponse, status_code=201)
+def create_task_from_prompt(
+    request: TaskPromptCreate,
+    db: Session = Depends(get_db)
+):
+    prompt = request.prompt.strip()
+
+    if not prompt:
+        raise HTTPException(
+            status_code=422,
+            detail="Task prompt cannot be empty"
+        )
+
+    # Step 1: Extract task details from gemini
+    try:
+        details = extract_task_details(prompt)
+    except Exception:
+        logger.exception("Gemini task extraction failed")
+        raise HTTPException(
+            status_code=502,
+            detail="Could not extract task details. Please try again."
+        )
+
+    # Step 2: Extract task deadline using date utility
+    due_date = extract_due_date(prompt)
+
+    # Step 3: Build database model
+    task = Task(
+        original_prompt=prompt,
+        title=details.title,
+        category=details.category,
+        priority=details.priority,
+        severity=details.severity,
+        due_date=due_date 
+    )
+
+    # Step 4: save the task
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+
+    # Step 5: return task
+    return task
+
 
 @router.get("", response_model=list[TaskResponse])
 def get_all_tasks(
