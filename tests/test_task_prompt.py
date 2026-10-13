@@ -140,3 +140,10 @@ def test_blank_prompt_returns_422(client):
     )
 
     assert response.status_code == 422
+
+def test_oversized_prompt_returns_422(client):
+    response = client.post(
+        "/tasks/from-prompt",
+        json={"prompt": "A" * 1001},
+    )
+    assert response.status_code == 422
