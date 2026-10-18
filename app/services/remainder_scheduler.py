@@ -1,13 +1,34 @@
 import logging
+import os
 
 from datetime import datetime, timedelta
+
+from dotenv import load_dotenv
 
 from app.database.database import SessionLocal
 from app.models.task import Task
 
 logger = logging.getLogger(__name__)
 
-REMAINDER_WINDOW_MINUTES = 15
+def get_remainder_window_minutes(value: str | None) -> int:
+    """Return a valid positive remainder window in minutes"""
+
+    if value is None:
+        return 60
+
+    try:
+        minutes = int(value)
+    except ValueError as exc:
+        raise ValueError("REMAINDER_WINDOW_MINUTES should be a valid integer") from exc
+
+    if minutes <= 0:
+        raise ValueError("REMAINDER_WINDOW_MINUTES should be greater than zero")
+
+    return minutes
+
+REMAINDER_WINDOW_MINUTES = get_remainder_window_minutes(
+    os.getenv("REMAINDER_WINDOW_MINUTES")
+)
 
 def check_due_tasks()-> None:
 

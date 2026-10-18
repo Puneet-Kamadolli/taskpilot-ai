@@ -10,7 +10,18 @@ from sqlalchemy.pool import StaticPool
 from app.database.database import Base
 from app.models.task import Task
 from app.services import remainder_scheduler
+from app.services.remainder_scheduler import get_remainder_window_minutes
 
+def test_remainder_window_minutes_default_to_60():
+    assert get_remainder_window_minutes(None) == 60
+
+def test_remainder_window_minutes_accepts_custom_value():
+    assert get_remainder_window_minutes("40") == 40
+
+@pytest.mark.parametrize("value",["0","-5","abc","2.5"])
+def test_remainder_window_minutes_invalid_values(value):
+    with pytest.raises(ValueError):
+        get_remainder_window_minutes(value)
 
 @pytest.fixture
 def test_session_factory(monkeypatch):
