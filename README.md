@@ -11,12 +11,10 @@ Solution being Developed: Currently developing TaskPilot AI, an AI-powered task 
 #### Implemented
 
 * Python
-
 * FastAPI – REST API development
 * SQLAlchemy – ORM and database operations
-
-
 * Uvicorn – ASGI server
+
 ####  Planned
 
 * Google gemini AI - natural language task processing
@@ -28,17 +26,12 @@ Solution being Developed: Currently developing TaskPilot AI, an AI-powered task 
 
 ### Implemented features
 
-
-
 * Task CRUD APIs: Create, retrieve, update, and delete tasks.
 * Task Retrieval: Retrieve all tasks or retrieve a task by its ID.
-
 * Task Filtering: Filter tasks by category, priority, severity, and status.
 * Deadline Management: Store optional task due dates and times.
 * Request Validation: Validate task data using Pydantic models
-
 * Database Persistence: Store task records in SQLite using SQLAlchemy.
-
 * REST API Documentation: Explore and test endpoints through FastAPI's Swagger UI.
 
 ### Planned Features
