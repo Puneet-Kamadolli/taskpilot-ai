@@ -38,5 +38,6 @@ class TaskUpdate(BaseModel):
 class TaskPromptCreate(BaseModel):
     prompt: str = Field(
         min_length=1,
+        max_length=1000,
         description="Natural-language description of the task"
     )
