@@ -139,7 +139,9 @@ def get_all_tasks(
         current_time = datetime.now()
 
         query = query.filter(
-            Task.due_date > current_time
+            Task.due_date.isnot(None),
+            Task.due_date < current_time,
+            Task.status == 'Pending'
         )
 
     # Tasks due before the specified date
