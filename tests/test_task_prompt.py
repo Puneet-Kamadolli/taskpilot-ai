@@ -147,3 +147,69 @@ def test_oversized_prompt_returns_422(client):
         json={"prompt": "A" * 1001},
     )
     assert response.status_code == 422
+
+def test_due_before_includes_tasks_selected_through_specified_date(client):
+    """Include tasks due on or before the specified date."""
+
+    def create_task(title, due_date=None):
+
+        response = client.post(
+            "/tasks",
+            json={
+                "original_prompt":title,
+                "title": title,
+                "category": "Work",
+                "priority": "Medium",
+                "severity": "Low",
+                "due_date": due_date
+            }
+        )
+
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    # 1. Previous day task: should be included
+    create_task(
+        "Previous Day task",
+        "2026-10-24T15:00:00"
+    )
+
+    # 2. Selected date at midnight: Should be included
+    create_task(
+        "Midnight task",
+        "2026-10-25T00:00:00"
+    )
+
+    # 3. Selected date at 3Pm: should be included
+    create_task(
+        "Afternoon task",
+        "2026-10-25T15:00:00"
+    )
+
+    # 4. Next day task: should be excluded
+    create_task(
+        "Next day task",
+        "2026-10-26T00:00:00"
+    )
+
+    # 5. No deadline task: should be excluded
+    create_task("No deadline task")
+
+    response = client.get(
+        "/tasks",
+        params={ "due_date": "2026-10-25"}
+    )
+
+    assert response.status_code == 200
+
+    returned_titles = {
+        task["title"] for task in response.json()
+    }
+
+    assert "Previous Day task" in returned_titles
+    assert "Midnight task" in returned_titles
+    assert "Afternoon task" in returned_titles
+
+    assert "Next day task" in returned_titles
+    assert "No deadline task" in returned_titles
+

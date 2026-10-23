@@ -147,7 +147,7 @@ def get_all_tasks(
     # Tasks due before the specified date
     if due_before:
 
-        cut_off = datetime.combine(due_before, time.min)
+        cut_off = datetime.combine(due_before + timedelta(days=1), time.min)
 
         query = query.filter(Task.due_date < cut_off)
 
