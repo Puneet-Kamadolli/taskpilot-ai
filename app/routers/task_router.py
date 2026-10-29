@@ -19,6 +19,16 @@ router = APIRouter(
     tags=["Tasks"]
     )
 
+def save_task(db: Session, task: Task) -> Task:
+    try:
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        return task
+    except Exception:
+        db.rollback()
+        raise
+
 @router.post(
     "",
     response_model=TaskResponse
@@ -44,12 +54,7 @@ def create_task(
         severity = request.severity,
         due_date = due_date
     )
-
-    db.add(task)
-    db.commit()
-    db.refresh(task)
-
-    return task
+    return save_task(db, task)
 
 @router.post("/from-prompt", response_model=TaskResponse, status_code=201)
 def create_task_from_prompt(
@@ -87,13 +92,8 @@ def create_task_from_prompt(
         due_date=due_date 
     )
 
-    # Step 4: save the task
-    db.add(task)
-    db.commit()
-    db.refresh(task)
-
-    # Step 5: return task
-    return task
+    # Step 4: save the task and return it
+    return save_task(db, task)
 
 
 @router.get("", response_model=list[TaskResponse])
@@ -190,8 +190,12 @@ def update_task(task_id: int,
     task.status = request.status
     task.due_date = request.due_date
 
-    db.commit()
-    db.refresh(task)
+    try:
+        db.commit()
+        db.refresh(task)
+    except Exception:
+        db.rollback()
+        raise
 
     return task
 
@@ -206,8 +210,12 @@ def delete_task_by_id(task_id : int,
             detail=f"Task with ID {task_id} not found"
         )
 
-    db.delete(task)
-    db.commit()
+    try:
+        db.delete(task)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise    
 
     return {
         "message":f"Task with ID {task_id} deleted successfully"
