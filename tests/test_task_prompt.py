@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session as SQLAlchemySession
 from sqlalchemy.pool import StaticPool
 
 from main import app
@@ -37,7 +37,10 @@ def client():
 
     app.dependency_overrides[get_db] = override_get_db
 
-    with TestClient(app) as testclient:
+    with TestClient(
+        app, 
+        raise_server_exceptions=False,
+        ) as testclient:
         yield testclient
 
     app.dependency_overrides.clear()
@@ -197,7 +200,7 @@ def test_due_before_includes_tasks_selected_through_specified_date(client):
 
     response = client.get(
         "/tasks",
-        params={ "due_date": "2026-10-25"}
+        params={ "due_before": "2026-10-25"}
     )
 
     assert response.status_code == 200
@@ -210,6 +213,95 @@ def test_due_before_includes_tasks_selected_through_specified_date(client):
     assert "Midnight task" in returned_titles
     assert "Afternoon task" in returned_titles
 
-    assert "Next day task" in returned_titles
-    assert "No deadline task" in returned_titles
+    assert "Next day task" not in returned_titles
+    assert "No deadline task" not in returned_titles
 
+def test_missing_task_returns_404(client):
+    response = client.get("/tasks/9999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == ("Task with ID 9999 not found")
+
+def test_invalid_task_priority_returns_422(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "original_prompt":"Prepare a report",
+            "title":"Prepare a report",
+            "category":"Work",
+            "priority":"Super High",
+            "severity":"Medium",
+        },
+    )
+
+    assert response.status_code == 422
+
+def test_unexpected_server_error_return_safe_500(
+        client,
+        monkeypatch
+):
+    def failing_extraction_date(prompt):
+        raise RuntimeError("Internal database details")
+
+    monkeypatch.setattr(
+        "app.routers.task_router.extract_due_date",
+        failing_extraction_date,
+    )
+
+    response = client.post(
+        "/tasks",
+        json = {
+            "original_prompt":"Prepare a document",
+            "title": "Prepare a document",
+            "category": "Work",
+            "priority": "Medium",
+            "severity": "Medium",
+        }
+    )
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "detail": "An unhandled server error occurred."
+    }
+    assert "Internal database details" not in response.text
+
+def test_database_commit_failure_triggers_rollback(
+        client,
+        monkeypatch
+):
+    rollback_called = False
+    original_rollback = SQLAlchemySession.rollback
+
+    def failing_commit(self):
+        raise RuntimeError("Simulate database failure")
+
+    def tracking_rollback(self):
+        nonlocal rollback_called
+        rollback_called = True
+        original_rollback(self)
+
+    monkeypatch.setattr(
+        SQLAlchemySession,
+        "commit",
+        failing_commit,
+    )
+
+    monkeypatch.setattr(
+        SQLAlchemySession,
+        "rollback",
+        tracking_rollback
+    )
+
+    response = client.post(
+        "/tasks",
+        json = {
+            "original_prompt":"Prepare a document",
+            "title": "Prepare a document",
+            "category": "Work",
+            "priority": "High",
+            "severity": "Medium",
+        }
+    )
+
+    assert response.status_code == 500
+    assert rollback_called is True
