@@ -1,4 +1,5 @@
 import logging
+import time
 from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -48,6 +49,33 @@ app = FastAPI(title="TaskPilot AI",
               description="AI Powered personal Task tracker and remainder",
               version="1.0.0",
               lifespan=lifespan)
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+   start_time = time.perf_counter()
+
+   method = request.method
+   path = request.url.path
+
+   try:
+       response = await call_next(request)
+
+       duration_ms = (time.perf_counter() - start_time) * 1000
+
+       logger.info(" API Request | method=%s | url=%s | status_code=%s | duration_ms=%.2f",
+                   method,
+                   path,
+                   response.status_code,
+                   duration_ms)
+       return response
+   except Exception:
+       duration_ms = (time.perf_counter() - start_time) * 1000
+
+       logger.exception("API Request | method=%s | url=%s | duration_ms=%.2f",
+                    method,
+                    path,
+                    duration_ms)
+       raise
 
 @app.exception_handler(Exception)
 async def unexpected_exception_handler(
