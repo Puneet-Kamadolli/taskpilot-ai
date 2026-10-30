@@ -8,6 +8,7 @@ TaskCategory = Literal[
     "Personal",
     "Learning",
     "Health",
+    "Shopping",
     "Other",
 ]
 

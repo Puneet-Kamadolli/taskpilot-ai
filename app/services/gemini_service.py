@@ -1,14 +1,11 @@
-import os
 import logging
 
-from dotenv import load_dotenv
 from google import genai
 from pydantic import BaseModel, Field
 from typing import Literal
 from google.genai.errors import APIError
 
-# Load environment variables from the project's .env file
-load_dotenv()
+from app.config import GEMINI_API_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +17,8 @@ class ExtractedTask(BaseModel):
     priority: Literal["Low","Medium","High","Urgent"]
     severity: Literal["Low","Medium","High","Critical"]
 
-# Read the API key without hardcoding it
-api_key = os.getenv("GEMINI_API_KEY")
-
-if not api_key:
-    raise RuntimeError("GEMINI_API_KEY is missing. Check .env config file")
-
 # Create the Gemini API client
-client = genai.Client(api_key=api_key)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 def extract_task_details(prompt: str) -> ExtractedTask:
     """Extract structured task details using Gemini with a fallback model"""

@@ -1,12 +1,9 @@
 import logging
-import os
-
 from datetime import datetime, timedelta
-
-from dotenv import load_dotenv
 
 from app.database.database import SessionLocal
 from app.models.task import Task
+from app.config import REMINDER_WINDOW_MINUTES
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +24,11 @@ def get_remainder_window_minutes(value: str | None) -> int:
     return minutes
 
 REMAINDER_WINDOW_MINUTES = get_remainder_window_minutes(
-    os.getenv("REMAINDER_WINDOW_MINUTES")
+    REMINDER_WINDOW_MINUTES
 )
 
 def check_due_tasks()-> None:
 
-    print("DEBUG: check_due_tasks() executed")
     """Log one remainder for pending tasks due within 15 mins"""
 
     db = SessionLocal()
@@ -41,8 +37,6 @@ def check_due_tasks()-> None:
 
         now = datetime.now()
         remainder_window_end = now + timedelta(minutes=REMAINDER_WINDOW_MINUTES)
-
-        print("DEBUG: DB session created. Inside try block now")
 
         logger.info(
             "Reminder check started | now=%s | window_end=%s",
