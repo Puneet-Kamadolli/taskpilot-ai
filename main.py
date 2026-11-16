@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.database.database import Base, engine
 from app.services.remainder_scheduler import check_due_tasks
 from app.routers.task_router import router as task_router
+from app.routers.health_router import router as health_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -97,6 +98,7 @@ async def unexpected_exception_handler(
     )
 
 app.include_router(task_router)
+app.include_router(health_router)
 
 @app.get("/")
 def health_check():
