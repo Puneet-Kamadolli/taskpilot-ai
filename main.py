@@ -17,8 +17,6 @@ logging.basicConfig(
     force=True
 )
 
-Base.metadata.create_all(bind=engine)
-
 scheduler = BackgroundScheduler()
 
 logger = logging.getLogger(__name__)
